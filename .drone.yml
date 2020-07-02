@@ -84,48 +84,6 @@ volumes:
 
 ---
 kind: pipeline
-name: arm
-
-platform:
-  os: linux
-  arch: arm
-
-steps:
-- name: tag
-  image: rancher/dapper:v0.4.2
-  commands:
-    - echo "${DRONE_TAG}-arm" | sed -e 's/+/-/g' >.tags
-  volumes:
-    - name: docker
-      path: /var/run/docker.sock
-- name: docker-publish
-  image: plugins/docker
-  settings:
-    dockerfile: Dockerfile
-    build_args:
-      - ARCH=arm
-      - TAG=${DRONE_TAG}
-    password:
-      from_secret: docker_password
-    repo: "rancher/rke2-upgrade"
-    username:
-      from_secret: docker_username
-  when:
-    instance:
-    - drone-publish.rancher.io
-    ref:
-    - refs/head/master
-    - refs/tags/*
-    event:
-    - tag
-
-volumes:
-- name: docker
-  host:
-    path: /var/run/docker.sock
-
----
-kind: pipeline
 name: manifest
 
 platform:
@@ -160,4 +118,3 @@ steps:
 depends_on:
   - amd64
   - arm64
-  - arm
