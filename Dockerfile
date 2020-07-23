@@ -8,11 +8,7 @@ RUN set -x \
  && apk --no-cache add \
     curl \
     file
-RUN if [ "${ARCH}" == "amd64" ]; then \
-      export ARTIFACT="rke2-"${TAG}".linux-amd64"; \
-    elif [ "${ARCH}" == "arm64" ]; then \
-      export ARTIFACT="rke2-"${TAG}".linux-arm64"; \
-    fi \
+RUN export ARTIFACT="rke2.linux-amd64" \
  && curl --output ${ARTIFACT}  --fail --location https://github.com/rancher/rke2/releases/download/${TAG}/${ARTIFACT} \
  && grep -E " rke2.*" sha256sum-${ARCH}.txt | sha256sum -c \
  && mv -vf ${ARTIFACT} /opt/rke2 \
