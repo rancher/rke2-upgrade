@@ -58,7 +58,7 @@ prepare() {
   NAMESPACE=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
   while true; do
     # make sure master plan does exist
-    PLAN=$( kubectl get plan $MASTER_PLAN -o jsonpath='{.metadata.name}' -n $NAMESPACE 2>/dev/null)
+    PLAN=$(kubectl get plan $MASTER_PLAN -o jsonpath='{.metadata.name}' -n $NAMESPACE 2>/dev/null)
     if [ -z "$PLAN" ]; then
 	    info "master plan $MASTER_PLAN doesn't exist"
 	    sleep 5
