@@ -51,7 +51,6 @@ kill_rke2_process() {
 
 prepare() {
   set +e
-  KUBECTL_BIN="/opt/rke2 kubectl"
   MASTER_PLAN=${1}
   if [ -z "$MASTER_PLAN" ]; then
     fatal "Master Plan name is not passed to the prepare step. Exiting"
@@ -59,13 +58,13 @@ prepare() {
   NAMESPACE=$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace)
   while true; do
     # make sure master plan does exist
-    PLAN=$(${KUBECTL_BIN} get plan $MASTER_PLAN -o jsonpath='{.metadata.name}' -n $NAMESPACE 2>/dev/null)
+    PLAN=$(kubectl get plan $MASTER_PLAN -o jsonpath='{.metadata.name}' -n $NAMESPACE 2>/dev/null)
     if [ -z "$PLAN" ]; then
 	    info "master plan $MASTER_PLAN doesn't exist"
 	    sleep 5
 	    continue
     fi
-    NUM_NODES=$(${KUBECTL_BIN} get plan $MASTER_PLAN -n $NAMESPACE -o json | jq '.status.applying | length')
+    NUM_NODES=$(kubectl get plan $MASTER_PLAN -n $NAMESPACE -o json | jq '.status.applying | length')
     if [ "$NUM_NODES" == "0" ]; then
       break
     fi
@@ -78,7 +77,7 @@ prepare() {
 verify_masters_versions() {
   while true; do
     all_updated="true"
-    MASTER_NODE_VERSION=$(${KUBECTL_BIN} get nodes --selector='node-role.kubernetes.io/master' -o json | jq -r '.items[].status.nodeInfo.kubeletVersion' | sort -u | tr '+' '-')
+    MASTER_NODE_VERSION=$(kubectl get nodes --selector='node-role.kubernetes.io/master' -o json | jq -r '.items[].status.nodeInfo.kubeletVersion' | sort -u | tr '+' '-')
     if [ -z "$MASTER_NODE_VERSION" ]; then
       sleep 5
       continue
