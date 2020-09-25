@@ -12,21 +12,21 @@ fatal()
 }
 
 get_rke2_process_info() {
-  rke2_PID=$(ps -ef | grep -E "/usr(/local)*/bin/rke2 .*(server|agent)" | grep -E -v "(init|grep)" | awk '{print $1}')
-  if [ -z "$rke2_PID" ]; then
+  RKE2_PID=$(ps -ef | grep -E "/usr(/local)*/bin/rke2 .*(server|agent)" | grep -E -v "(init|grep)" | awk '{print $1}')
+  if [ -z "$RKE2_PID" ]; then
     fatal "rke2 is not running on this server"
   fi
-  info "rke2 binary is running with pid $rke2_PID"
-  rke2_BIN_PATH=$(cat /host/proc/${rke2_PID}/cmdline | awk '{print $1}' | head -n 1)
-  if [ -z "$rke2_BIN_PATH" ]; then
-    fatal "Failed to fetch the rke2 binary path from process $rke2_PID"
+  info "rke2 binary is running with pid $RKE2_PID"
+  RKE2_BIN_PATH=$(cat /host/proc/${RKE2_PID}/cmdline | awk '{print $1}' | head -n 1)
+  if [ -z "$RKE2_BIN_PATH" ]; then
+    fatal "Failed to fetch the rke2 binary path from process $RKE2_PID"
   fi
   return
 }
 
 replace_binary() {
   NEW_BINARY="/opt/rke2"
-  FULL_BIN_PATH="/host$rke2_BIN_PATH"
+  FULL_BIN_PATH="/host$RKE2_BIN_PATH"
   if [ ! -f $NEW_BINARY ]; then
     fatal "The new binary $NEW_BINARY doesn't exist"
   fi
@@ -35,9 +35,14 @@ replace_binary() {
   if [ $BIN_COUNT == "1" ]; then
     info "Binary already been replaced"
     exit 0
-  fi	  	
-  info "Deploying new rke2 binary to $rke2_BIN_PATH"
+  fi
+  RKE2_CONTEXT=$(getfilecon $FULL_BIN_PATH 2>/dev/null | awk '{print $2}' || true)
+  info "Deploying new rke2 binary to $RKE2_BIN_PATH"
   cp $NEW_BINARY $FULL_BIN_PATH
+  if [ -n "${RKE2_CONTEXT}" ]; then
+    info 'Restoring rke2 bin context'
+    setfilecon "${RKE2_CONTEXT}" $FULL_BIN_PATH
+  fi
   info "rke2 binary has been replaced successfully"
   return
 }
@@ -45,8 +50,8 @@ replace_binary() {
 kill_rke2_process() {
     # the script sends SIGTERM to the process and let the supervisor
     # to automatically restart rke2 with the new version
-    kill -SIGTERM $rke2_PID
-    info "Successfully Killed old rke2 process $rke2_PID"
+    kill -SIGTERM $RKE2_PID
+    info "Successfully Killed old rke2 process $RKE2_PID"
 }
 
 prepare() {
