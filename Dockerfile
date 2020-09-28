@@ -24,7 +24,7 @@ FROM ${ALPINE}
 ARG ARCH
 ARG TAG
 RUN apk --no-cache add \
-    jq
+    jq libselinux-utils
 COPY --from=verify /opt/rke2 /opt/rke2
 COPY scripts/upgrade.sh /bin/upgrade.sh
 COPY --from=verify /verify/kubectl /usr/local/bin/kubectl
