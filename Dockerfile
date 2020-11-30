@@ -20,6 +20,12 @@ RUN set -x \
  && curl -fsSLO https://storage.googleapis.com/kubernetes-release/release/v1.18.4/bin/linux/${ARCH}/kubectl \
  && chmod +x kubectl
 
+RUN set -x \
+ && apk --no-cache add curl \
+ && curl -fsSLO https://github.com/rancher/config-modifier/releases/download/v0.0.1/config-modifier-${ARCH} \
+ && mv -vf config-modifier-${ARCH} config-modifier \
+ && chmod +x config-modifier
+
 FROM ${ALPINE}
 ARG ARCH
 ARG TAG
@@ -27,6 +33,7 @@ RUN apk --no-cache add \
     jq libselinux-utils
 COPY --from=verify /opt/rke2 /opt/rke2
 COPY scripts/upgrade.sh /bin/upgrade.sh
+COPY --from=verify /verify/config-modifier /usr/local/bin/config-modifier
 COPY --from=verify /verify/kubectl /usr/local/bin/kubectl
 ENTRYPOINT ["/bin/upgrade.sh"]
 CMD ["upgrade"]

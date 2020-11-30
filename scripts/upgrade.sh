@@ -97,6 +97,23 @@ verify_masters_versions() {
   done
 }
 
+replace_config_file(){
+KUBECTL_BIN="/opt/rke2 kubectl"
+CONFIG_FILE="/host/etc/rancher/rke2/config.yaml"
+LABELS=$(${KUBECTL_BIN} get nodes $HOSTNAME  --show-labels | tail -n +2  | awk '{print $6}' )
+LIST=$(echo $LABELS | tr "," "\n" | tr "=" "-")
+echo $LIST
+ls /host/opt/rke2
+config-modifier --host-path $CONFIG_FILE --config-path /host/opt/rke2/ --preserved-entries "datastore-endpoint" --preserved-entries "token" --node-labels $(echo $LIST |  sed "s/ / --node-labels /g")
+}
+
+config(){
+  get_rke2_process_info
+  replace_config_file
+  kill_rke2_process
+}
+
+
 upgrade() {
   get_rke2_process_info
   replace_binary
