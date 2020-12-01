@@ -21,6 +21,7 @@ steps:
     build_args:
       - ARCH=amd64
       - TAG=${DRONE_TAG}
+      - MODIFIER_VERSION=v0.0.1
     password:
       from_secret: docker_password
     repo: "rancher/rke2-upgrade"
