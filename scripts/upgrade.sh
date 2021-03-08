@@ -12,7 +12,7 @@ fatal()
 }
 
 get_rke2_process_info() {
-  RKE2_PID=$(ps -ef | grep -E "/usr(/local)*/bin/rke2 .*(server|agent)" | grep -E -v "(init|grep)" | awk '{print $1}')
+  RKE2_PID=$(ps -ef | grep -E "(/usr|/usr/local|/opt/rke2)/bin/rke2 .*(server|agent)" | grep -E -v "(init|grep)" | awk '{print $1}')
   if [ -z "$RKE2_PID" ]; then
     fatal "rke2 is not running on this server"
   fi
@@ -45,6 +45,16 @@ replace_binary() {
   fi
   info "rke2 binary has been replaced successfully"
   return
+}
+
+ensure_home_env() {
+  info "Ensuring presence of HOME environment variable"
+  RKE2_BIN_DIR=$(dirname $RKE2_BIN_PATH)
+  FULL_SYSTEM_PATH="/host$RKE2_BIN_DIR/../lib/systemd/system/"
+  for C in server agent; do
+    ENV_FILE_PATH="$FULL_SYSTEM_PATH/rke2-$C.env"
+    grep -sq $ENV_FILE_PATH '^HOME=' || echo -e "\nHOME=/root" >> $ENV_FILE_PATH
+  done
 }
 
 kill_rke2_process() {
@@ -100,6 +110,7 @@ verify_masters_versions() {
 upgrade() {
   get_rke2_process_info
   replace_binary
+  ensure_home_env
   kill_rke2_process
 }
 
