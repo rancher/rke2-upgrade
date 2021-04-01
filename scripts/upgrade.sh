@@ -60,8 +60,9 @@ ensure_home_env() {
 kill_rke2_process() {
     # the script sends SIGTERM to the process and let the supervisor
     # to automatically restart rke2 with the new version
-    kill -SIGTERM $RKE2_PID
-    info "Successfully Killed old rke2 process $RKE2_PID"
+    CHILD_PIDS=$(pgrep -lP $RKE2_PID | grep -Eo '[0-9]+ (containerd|kubelet)' | awk 'BEGIN{ORS=" "}{print $1}')
+    kill -SIGTERM $RKE2_PID $CHILD_PIDS
+    info "Successfully Killed old rke2 process $RKE2_PID and containerd/kubelet processes $CHILD_PIDS"
 }
 
 prepare() {
