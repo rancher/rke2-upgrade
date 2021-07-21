@@ -25,7 +25,7 @@ FROM ${ALPINE}
 ARG ARCH
 ARG TAG
 RUN apk --no-cache add \
-    jq libselinux-utils
+    jq libselinux-utils bash
 COPY --from=verify /opt/rke2 /opt/rke2
 COPY scripts/upgrade.sh /bin/upgrade.sh
 COPY scripts/semver-parse.sh /bin/semver-parse.sh
