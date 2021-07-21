@@ -28,6 +28,7 @@ RUN apk --no-cache add \
     jq libselinux-utils
 COPY --from=verify /opt/rke2 /opt/rke2
 COPY scripts/upgrade.sh /bin/upgrade.sh
+COPY scripts/semver-parse.sh /bin/semver-parse.sh
 COPY --from=verify /verify/kubectl /usr/local/bin/kubectl
 ENTRYPOINT ["/bin/upgrade.sh"]
 CMD ["upgrade"]
