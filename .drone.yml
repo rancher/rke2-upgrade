@@ -40,6 +40,52 @@ volumes:
   host:
     path: /var/run/docker.sock
 
+---
+kind: pipeline
+name: s390x
+
+platform:
+  os: linux
+  arch: amd64
+
+node:
+  arch: s390x
+
+steps:
+- name: tag
+  image: rancher/dapper:v0.5.8
+  failure: ignore
+  commands:
+    - echo "${DRONE_TAG}-s390x" | sed -e 's/+/-/g' >.tags
+  volumes:
+    - name: docker
+      path: /var/run/docker.sock
+- name: docker-publish
+  image: plugins/docker
+  failure: ignore
+  settings:
+    dockerfile: Dockerfile
+    build_args:
+      - ARCH=s390x
+      - TAG=${DRONE_TAG}
+    password:
+      from_secret: docker_password
+    repo: "rancher/rke2-upgrade"
+    username:
+      from_secret: docker_username
+  when:
+    instance:
+    - drone-publish.rancher.io
+    ref:
+    - refs/head/master
+    - refs/tags/*
+    event:
+    - tag
+
+volumes:
+- name: docker
+  host:
+    path: /var/run/docker.sock
 
 ---
 kind: pipeline
@@ -76,3 +122,4 @@ steps:
 
 depends_on:
   - amd64
+  - s390x
