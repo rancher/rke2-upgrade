@@ -61,8 +61,11 @@ steps:
     - name: docker
       path: /var/run/docker.sock
 - name: docker-publish
-  image: plugins/docker
+  image: rancher/drone-images:docker-s390x
   failure: ignore
+  volumes:
+  - name: docker
+    path: /var/run/docker.sock
   settings:
     dockerfile: Dockerfile
     build_args:
