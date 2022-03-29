@@ -54,7 +54,6 @@ node:
 steps:
 - name: tag
   image: rancher/dapper:v0.5.8
-  failure: ignore
   commands:
     - echo "${DRONE_TAG}-s390x" | sed -e 's/+/-/g' >.tags
   volumes:
@@ -62,7 +61,6 @@ steps:
       path: /var/run/docker.sock
 - name: docker-publish
   image: rancher/drone-images:docker-s390x
-  failure: ignore
   volumes:
   - name: docker
     path: /var/run/docker.sock
