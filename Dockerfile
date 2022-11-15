@@ -26,7 +26,7 @@ ARG ARCH
 ARG TAG
 RUN zypper -n update \
  && zypper -n install \
-    jq selinux-tools \
+    jq selinux-tools gawk \
  && zypper -n clean -a && rm -rf /tmp/* /var/tmp/* /usr/share/doc/packages/* /usr/share/doc/manual/* /var/log/*
 COPY --from=verify /opt/rke2 /opt/rke2
 COPY scripts/upgrade.sh /bin/upgrade.sh
