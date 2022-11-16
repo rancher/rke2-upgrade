@@ -12,7 +12,7 @@ fatal()
 }
 
 get_rke2_process_info() {
-  RKE2_PID=$(ps -ef | grep -E "(/usr|/usr/local|/opt/rke2)/bin/rke2 .*(server|agent)" | grep -E -v "(init|grep)" | awk '{print $1}')
+  RKE2_PID=$(ps -ef | grep -E "(/usr|/usr/local|/opt/rke2)/bin/rke2 .*(server|agent)" | grep -E -v "(init|grep)" | awk '{print $2}')
   if [ -z "$RKE2_PID" ]; then
     fatal "rke2 is not running on this server"
   fi
