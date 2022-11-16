@@ -1,12 +1,11 @@
-ARG BCI_IMAGE=registry.suse.com/bci/bci-base:15.3.17.20.57
-FROM ${BCI_IMAGE} AS verify
+ARG ALPINE=alpine:3.11
+FROM ${ALPINE} AS verify
 ARG ARCH
 ARG TAG
 WORKDIR /verify
 ADD https://github.com/rancher/rke2/releases/download/${TAG}/sha256sum-${ARCH}.txt .
 RUN set -x \
- && zypper -n update \
- && zypper -n install \
+  && apk --no-cache add \
     curl \
     file
 RUN export ARTIFACT="rke2.linux-${ARCH}" \
@@ -17,17 +16,16 @@ RUN export ARTIFACT="rke2.linux-${ARCH}" \
  && file /opt/rke2
 
 RUN set -x \
+ && apk --no-cache add curl \
  && export K8S_RELEASE=$(echo ${TAG} | grep -Eo 'v[0-9]+\.[0-9]+\.[0-9]+') \
  && curl -fsSLO https://storage.googleapis.com/kubernetes-release/release/${K8S_RELEASE}/bin/linux/${ARCH}/kubectl \
  && chmod +x kubectl
 
-FROM ${BCI_IMAGE}
+FROM ${ALPINE}
 ARG ARCH
 ARG TAG
-RUN zypper -n update \
- && zypper -n install \
-    jq selinux-tools gawk \
- && zypper -n clean -a && rm -rf /tmp/* /var/tmp/* /usr/share/doc/packages/* /usr/share/doc/manual/* /var/log/*
+RUN apk --no-cache add \
+   jq libselinux-utils bash
 COPY --from=verify /opt/rke2 /opt/rke2
 COPY scripts/upgrade.sh /bin/upgrade.sh
 COPY scripts/semver-parse.sh /bin/semver-parse.sh
