@@ -22,6 +22,8 @@ RUN set -x \
  && chmod +x kubectl
 
 FROM ${ALPINE}
+LABEL "org.opencontainers.image.url"="https://hub.docker.com/r/rancher/rke2-upgrade"
+LABEL "org.opencontainers.image.source"="https://github.com/rancher/rke2-upgrade"
 ARG ARCH
 ARG TAG
 RUN apk --no-cache add \
