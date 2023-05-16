@@ -24,7 +24,7 @@ RUN set -x \
 FROM ${ALPINE}
 LABEL "org.opencontainers.image.url"="https://hub.docker.com/r/rancher/rke2-upgrade"
 LABEL "org.opencontainers.image.source"="https://github.com/rancher/rke2-upgrade"
-LABEL "org.opencontainers.image.base.name"="${ALPINE}"
+LABEL "org.opencontainers.image.base.name"="alpine"
 ARG ARCH
 ARG TAG
 RUN apk --no-cache add \
