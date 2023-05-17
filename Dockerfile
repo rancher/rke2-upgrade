@@ -22,11 +22,12 @@ RUN set -x \
  && chmod +x kubectl
 
 FROM ${ALPINE}
-LABEL "org.opencontainers.image.url"="https://hub.docker.com/r/rancher/rke2-upgrade"
-LABEL "org.opencontainers.image.source"="https://github.com/rancher/rke2-upgrade"
-LABEL "org.opencontainers.image.base.name"="alpine"
 ARG ARCH
 ARG TAG
+ARG ALPINE
+LABEL org.opencontainers.image.url="https://hub.docker.com/r/rancher/rke2-upgrade"
+LABEL org.opencontainers.image.source="https://github.com/rancher/rke2-upgrade"
+LABEL org.opencontainers.image.base.name="${ALPINE}"
 RUN apk --no-cache add \
    jq libselinux-utils bash
 COPY --from=verify /opt/rke2 /opt/rke2
