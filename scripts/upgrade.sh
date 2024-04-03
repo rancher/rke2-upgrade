@@ -53,7 +53,7 @@ ensure_home_env() {
   FULL_SYSTEM_PATH="/host$RKE2_BIN_DIR/../lib/systemd/system/"
   for C in server agent; do
     ENV_FILE_PATH="$FULL_SYSTEM_PATH/rke2-$C.env"
-    grep -sq $ENV_FILE_PATH '^HOME=' || echo -e "\nHOME=/root" >> $ENV_FILE_PATH
+    grep -sq '^HOME=' $ENV_FILE_PATH || echo -e "\nHOME=/root" >> $ENV_FILE_PATH
   done
 }
 
