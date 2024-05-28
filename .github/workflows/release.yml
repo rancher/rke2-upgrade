@@ -36,7 +36,7 @@ jobs:
         context: .
         push: true
         tags: husseingalal/rke2-upgrade:${{ env.GIT_TAG }}
-        file: package/Dockerfile
+        file: Dockerfile
         platforms: linux/amd64
         build-args: |
           TAG=${{ github.ref_name }}
