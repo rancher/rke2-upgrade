@@ -35,7 +35,7 @@ jobs:
       with:
         context: .
         push: true
-        tags: rancher/rke2-upgrade:${{ env.GIT_TAG }}
+        tags: husseingalal/rke2-upgrade:${{ env.GIT_TAG }}
         file: package/Dockerfile
         platforms: linux/amd64
         build-args:
