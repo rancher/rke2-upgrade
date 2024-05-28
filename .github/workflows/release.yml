@@ -15,7 +15,7 @@ jobs:
 
     - name: Change Tag
       run: |
-        echo "{GIT_TAG}=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')}" >> "$GITHUB_ENV"
+        echo "GIT_TAG=$(echo "${{ github.ref_name }}" | sed -e 's/+/-/g')}" >> "$GITHUB_ENV"
 
     # - name: "Read secrets"
     #   uses: rancher-eio/read-vault-secrets@main
