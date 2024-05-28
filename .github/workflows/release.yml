@@ -38,6 +38,6 @@ jobs:
         tags: husseingalal/rke2-upgrade:${{ env.GIT_TAG }}
         file: package/Dockerfile
         platforms: linux/amd64
-        build-args:
-        - TAG=${{ github.ref_name }}
-        - ARCH=amd64
+        build-args: |
+          TAG=${{ github.ref_name }}
+          ARCH=amd64
