@@ -37,7 +37,7 @@ jobs:
         push: true
         tags: rancher/rke2-upgrade:${{ env.GIT_TAG }}
         file: Dockerfile
-        platforms: linux/amd64
+        platforms: linux/amd64,linux/arm64
         build-args: |
           TAG=${{ github.ref_name }}
           ARCH=amd64
