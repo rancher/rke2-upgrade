@@ -1,16 +1,15 @@
 ARG ALPINE=alpine:3.18
 FROM ${ALPINE} AS verify
-ARG ARCH
 ARG TAG
 WORKDIR /verify
-ADD https://github.com/rancher/rke2/releases/download/${TAG}/sha256sum-${ARCH}.txt .
+ADD https://github.com/rancher/rke2/releases/download/${TAG}/sha256sum-${TARGETARCH}.txt .
 RUN set -x \
   && apk --no-cache add \
     curl \
     file
-RUN export ARTIFACT="rke2.linux-${ARCH}" \
+RUN export ARTIFACT="rke2.linux-${TARGETARCH}" \
  && curl --output ${ARTIFACT}  --fail --location https://github.com/rancher/rke2/releases/download/${TAG}/${ARTIFACT} \
- && grep "rke2.linux-${ARCH}$" sha256sum-${ARCH}.txt | sha256sum -c \
+ && grep "rke2.linux-${TARGETARCH}$" sha256sum-${TARGETARCH}.txt | sha256sum -c \
  && mv -vf ${ARTIFACT} /opt/rke2 \
  && chmod +x /opt/rke2 \
  && file /opt/rke2
@@ -18,11 +17,10 @@ RUN export ARTIFACT="rke2.linux-${ARCH}" \
 RUN set -x \
  && apk --no-cache add curl \
  && export K8S_RELEASE=$(echo ${TAG} | grep -Eo 'v[0-9]+\.[0-9]+\.[0-9]+') \
- && curl -fsSLO https://storage.googleapis.com/kubernetes-release/release/${K8S_RELEASE}/bin/linux/${ARCH}/kubectl \
+ && curl -fsSLO https://storage.googleapis.com/kubernetes-release/release/${K8S_RELEASE}/bin/linux/${TARGETARCH}/kubectl \
  && chmod +x kubectl
 
 FROM ${ALPINE}
-ARG ARCH
 ARG TAG
 ARG ALPINE
 LABEL org.opencontainers.image.url="https://hub.docker.com/r/rancher/rke2-upgrade"
