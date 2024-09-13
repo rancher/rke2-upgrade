@@ -18,7 +18,7 @@ RUN export ARTIFACT="rke2.linux-${ARCH}" \
 RUN set -x \
  && apk --no-cache add curl \
  && export K8S_RELEASE=$(echo ${TAG} | grep -Eo 'v[0-9]+\.[0-9]+\.[0-9]+') \
- && curl -fsSLO https://storage.googleapis.com/kubernetes-release/release/${K8S_RELEASE}/bin/linux/${ARCH}/kubectl \
+ && curl -fsSLO https://cdn.dl.k8s.io/release/${K8S_RELEASE}/bin/linux/${ARCH}/kubectl \
  && chmod +x kubectl
 
 FROM ${ALPINE}
