@@ -9,6 +9,11 @@ permissions:
 jobs:
   publish-rke2-upgrade:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ linux ]
+        arch: [ amd64, arm64 ]
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -37,7 +42,7 @@ jobs:
         push: true
         tags: rancher/rke2-upgrade:${{ env.GIT_TAG }}
         file: Dockerfile
-        platforms: linux/amd64
+        platforms: ${{ matrix.os }}/${{ matrix.arch }}
         build-args: |
           TAG=${{ github.ref_name }}
-          ARCH=amd64
+          ARCH=${{ matrix.arch }}
