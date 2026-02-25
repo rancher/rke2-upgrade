@@ -120,8 +120,8 @@ verify_controlplane_versions() {
       sleep 5
       continue
     fi
-  	K8S_IMAGE_TAG=$(bash /bin/semver-parse.sh $SYSTEM_UPGRADE_PLAN_LATEST_VERSION k8s)
-  	if [ "$CONTROLPLANE_NODE_VERSION" == "$K8S_IMAGE_TAG" ]; then
+    K8S_IMAGE_TAG=$(bash /bin/semver-parse.sh $SYSTEM_UPGRADE_PLAN_LATEST_VERSION k8s)
+    if [ "$CONTROLPLANE_NODE_VERSION" == "$K8S_IMAGE_TAG" ]; then
         info "All control-plane nodes have been upgraded to version to $CONTROLPLANE_NODE_VERSION"
 		    break
 		fi
