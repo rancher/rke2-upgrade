@@ -133,6 +133,10 @@ verify_controlplane_versions() {
 
 validate_version() {
     CONTROLPLANE_NODE_VERSION=$(kubectl get nodes --selector='node-role.kubernetes.io/control-plane' -o json | jq -r '.items[].status.nodeInfo.kubeletVersion' | sort -u | tr '+' '-')
+    if [ -z "$CONTROLPLANE_NODE_VERSION" ]; then
+      fatal "Failed to fetch control-plane node version"
+    fi
+
     PLAN_LATEST_VERSION=$(bash /bin/semver-parse.sh $SYSTEM_UPGRADE_PLAN_LATEST_VERSION k8s)
 
     CONTROLPLANE_NODE_VERSION_MAJOR=$(bash /bin/semver-parse.sh "$CONTROLPLANE_NODE_VERSION" major)
