@@ -120,24 +120,8 @@ verify_controlplane_versions() {
       sleep 5
       continue
     fi
-
-	K8S_IMAGE_TAG=$(bash /bin/semver-parse.sh $SYSTEM_UPGRADE_PLAN_LATEST_VERSION k8s)
-	CONTROLPLANE_NODE_VERSION_MAJOR=$(bash /bin/semver-parse.sh "$CONTROLPLANE_NODE_VERSION" major)
-	CONTROLPLANE_NODE_VERSION_MINOR=$(bash /bin/semver-parse.sh "$CONTROLPLANE_NODE_VERSION" minor)
-	CONTROLPLANE_NODE_VERSION_PATCH=$(bash /bin/semver-parse.sh "$CONTROLPLANE_NODE_VERSION" patch)
-	K8S_IMAGE_TAG_MAJOR=$(bash /bin/semver-parse.sh "$K8S_IMAGE_TAG" major)
-	K8S_IMAGE_TAG_MINOR=$(bash /bin/semver-parse.sh "$K8S_IMAGE_TAG" minor)
-	K8S_IMAGE_TAG_PATCH=$(bash /bin/semver-parse.sh "$K8S_IMAGE_TAG" patch)
-	
-	if [ "$K8S_IMAGE_TAG_MAJOR" -gt "$CONTROLPLANE_NODE_VERSION_MAJOR" ] ||
-	   { [ "$K8S_IMAGE_TAG_MAJOR" -eq "$CONTROLPLANE_NODE_VERSION_MAJOR" ] && [ "$K8S_IMAGE_TAG_MINOR" -gt "$CONTROLPLANE_NODE_VERSION_MINOR" ]; } ||
-	   { [ "$K8S_IMAGE_TAG_MAJOR" -eq "$CONTROLPLANE_NODE_VERSION_MAJOR" ] && [ "$K8S_IMAGE_TAG_MINOR" -eq "$CONTROLPLANE_NODE_VERSION_MINOR" ] && [ "$K8S_IMAGE_TAG_PATCH" -ge "$CONTROLPLANE_NODE_VERSION_PATCH" ]; }; then
-	  info "Version validation passed: $K8S_IMAGE_TAG >= $CONTROLPLANE_NODE_VERSION"
-	else
-	  fatal "Version validation failed: $K8S_IMAGE_TAG_MAJOR is older than $CONTROLPLANE_NODE_VERSION_MAJOR"
-	fi
-
-	if [ "$CONTROLPLANE_NODE_VERSION" == "$K8S_IMAGE_TAG" ]; then
+  	K8S_IMAGE_TAG=$(bash /bin/semver-parse.sh $SYSTEM_UPGRADE_PLAN_LATEST_VERSION k8s)
+  	if [ "$CONTROLPLANE_NODE_VERSION" == "$K8S_IMAGE_TAG" ]; then
         info "All control-plane nodes have been upgraded to version to $CONTROLPLANE_NODE_VERSION"
 		    break
 		fi
@@ -147,7 +131,28 @@ verify_controlplane_versions() {
   done
 }
 
+validate_version() {
+    CONTROLPLANE_NODE_VERSION=$(kubectl get nodes --selector='node-role.kubernetes.io/control-plane' -o json | jq -r '.items[].status.nodeInfo.kubeletVersion' | sort -u | tr '+' '-')
+    PLAN_LATEST_VERSION=$(bash /bin/semver-parse.sh $SYSTEM_UPGRADE_PLAN_LATEST_VERSION k8s)
+
+    CONTROLPLANE_NODE_VERSION_MAJOR=$(bash /bin/semver-parse.sh "$CONTROLPLANE_NODE_VERSION" major)
+    CONTROLPLANE_NODE_VERSION_MINOR=$(bash /bin/semver-parse.sh "$CONTROLPLANE_NODE_VERSION" minor)
+    CONTROLPLANE_NODE_VERSION_PATCH=$(bash /bin/semver-parse.sh "$CONTROLPLANE_NODE_VERSION" patch)
+    PLAN_LATEST_VERSION_MAJOR=$(bash /bin/semver-parse.sh "$PLAN_LATEST_VERSION" major)
+    PLAN_LATEST_VERSION_MINOR=$(bash /bin/semver-parse.sh "$PLAN_LATEST_VERSION" minor)
+    PLAN_LATEST_VERSION_PATCH=$(bash /bin/semver-parse.sh "$PLAN_LATEST_VERSION" patch)
+
+  	if [ "$PLAN_LATEST_VERSION_MAJOR" -gt "$CONTROLPLANE_NODE_VERSION_MAJOR" ] ||
+  	   { [ "$PLAN_LATEST_VERSION_MAJOR" -eq "$CONTROLPLANE_NODE_VERSION_MAJOR" ] && [ "$PLAN_LATEST_VERSION_MINOR" -gt "$CONTROLPLANE_NODE_VERSION_MINOR" ]; } ||
+  	   { [ "$PLAN_LATEST_VERSION_MAJOR" -eq "$CONTROLPLANE_NODE_VERSION_MAJOR" ] && [ "$PLAN_LATEST_VERSION_MINOR" -eq "$CONTROLPLANE_NODE_VERSION_MINOR" ] && [ "$PLAN_LATEST_VERSION_PATCH" -ge "$CONTROLPLANE_NODE_VERSION_PATCH" ]; }; then
+  	  info "Version validation passed: $PLAN_LATEST_VERSION >= $CONTROLPLANE_NODE_VERSION"
+  	else
+  	  fatal "Version validation failed: $PLAN_LATEST_VERSION_MAJOR is older than $CONTROLPLANE_NODE_VERSION_MAJOR"
+  	fi
+}
+
 upgrade() {
+  validate_version
   get_rke2_process_info
   replace_binary
   ensure_home_env
