@@ -55,6 +55,21 @@ replace_binary() {
     exit 0
   fi
 
+  set +e
+
+  NEW_BIN_SEMVER="$($NEW_BINARY -v | head -1)"
+  FULL_BIN_SEMVER="$($FULL_BIN_PATH -v | head -1)"
+
+  # Returns 0 if version1 <= version2, 1 otherwise
+  compare_versions "$FULL_BIN_SEMVER" "$NEW_BIN_SEMVER"
+
+  if [ $? -eq 1 ]; then
+    echo "Error: Current ${FULL_BIN_SEMVER} is higher than ${NEW_BIN_SEMVER}"
+    exit 1
+  fi
+
+  set -e
+
   RKE2_CONTEXT=$(getfilecon $FULL_BIN_PATH 2>/dev/null | awk '{print $2}' || true)
   info "Deploying new rke2 binary to $RKE2_BIN_PATH"
   cp $NEW_BINARY $FULL_BIN_PATH
@@ -131,32 +146,31 @@ verify_controlplane_versions() {
   done
 }
 
-validate_version() {
-    CONTROLPLANE_NODE_VERSION=$(kubectl get nodes --selector='node-role.kubernetes.io/control-plane' -o json | jq -r '.items[].status.nodeInfo.kubeletVersion' | sort -u | tr '+' '-')
-    if [ -z "$CONTROLPLANE_NODE_VERSION" ]; then
-      fatal "Failed to fetch control-plane node version"
+# Function to compare semantic versions.
+# Compares only major.minor.patch, ignoring any leading characters and trailing pre-release or build metadata.
+# Returns 0 if version1 <= version2, 1 otherwise
+compare_versions() {
+    version1=$(echo "$1" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')
+    version2=$(echo "$2" | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+')
+
+    if [ "$version1" = "$version2" ]; then
+        return 0
     fi
 
-    PLAN_LATEST_VERSION=$(bash /bin/semver-parse.sh $SYSTEM_UPGRADE_PLAN_LATEST_VERSION k8s)
+    IFS=.
 
-    CONTROLPLANE_NODE_VERSION_MAJOR=$(bash /bin/semver-parse.sh "$CONTROLPLANE_NODE_VERSION" major)
-    CONTROLPLANE_NODE_VERSION_MINOR=$(bash /bin/semver-parse.sh "$CONTROLPLANE_NODE_VERSION" minor)
-    CONTROLPLANE_NODE_VERSION_PATCH=$(bash /bin/semver-parse.sh "$CONTROLPLANE_NODE_VERSION" patch)
-    PLAN_LATEST_VERSION_MAJOR=$(bash /bin/semver-parse.sh "$PLAN_LATEST_VERSION" major)
-    PLAN_LATEST_VERSION_MINOR=$(bash /bin/semver-parse.sh "$PLAN_LATEST_VERSION" minor)
-    PLAN_LATEST_VERSION_PATCH=$(bash /bin/semver-parse.sh "$PLAN_LATEST_VERSION" patch)
+    # shellcheck disable=SC2086
+    set -- $version1
+    version1=$(printf "%03d%03d%03d" "$@")
 
-  	if [ "$PLAN_LATEST_VERSION_MAJOR" -gt "$CONTROLPLANE_NODE_VERSION_MAJOR" ] ||
-  	   { [ "$PLAN_LATEST_VERSION_MAJOR" -eq "$CONTROLPLANE_NODE_VERSION_MAJOR" ] && [ "$PLAN_LATEST_VERSION_MINOR" -gt "$CONTROLPLANE_NODE_VERSION_MINOR" ]; } ||
-  	   { [ "$PLAN_LATEST_VERSION_MAJOR" -eq "$CONTROLPLANE_NODE_VERSION_MAJOR" ] && [ "$PLAN_LATEST_VERSION_MINOR" -eq "$CONTROLPLANE_NODE_VERSION_MINOR" ] && [ "$PLAN_LATEST_VERSION_PATCH" -ge "$CONTROLPLANE_NODE_VERSION_PATCH" ]; }; then
-  	  info "Version validation passed: $PLAN_LATEST_VERSION >= $CONTROLPLANE_NODE_VERSION"
-  	else
-  	  fatal "Version validation failed: $PLAN_LATEST_VERSION_MAJOR is older than $CONTROLPLANE_NODE_VERSION_MAJOR"
-  	fi
+    # shellcheck disable=SC2086
+    set -- $version2
+    version2=$(printf "%03d%03d%03d" "$@")
+
+    test "$version2" -ge "$version1"
 }
 
 upgrade() {
-  validate_version
   get_rke2_process_info
   replace_binary
   ensure_home_env
