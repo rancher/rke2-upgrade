@@ -21,7 +21,7 @@ RUN set -x \
 RUN set -x \
  && apk --no-cache add curl \
  && export K8S_RELEASE=$(echo ${TAG} | grep -Eo 'v[0-9]+\.[0-9]+\.[0-9]+') \
- && curl -fsSLO https://cdn.dl.k8s.io/release/${K8S_RELEASE}/bin/linux/${TARGETARCH}/kubectl \
+ && curl -fsSLO https://dl.k8s.io/release/${K8S_RELEASE}/bin/linux/${TARGETARCH}/kubectl \
  && chmod +x kubectl
 
 FROM ${ALPINE}
