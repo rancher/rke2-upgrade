@@ -34,3 +34,7 @@ else
     cp local/* artifacts
     chmod +x artifacts/installer.sh
 fi
+
+pushd artifacts
+grep "rke2.linux-${ARCH}.tar.gz$" "sha256sum-${ARCH}.txt" | sha256sum -c -
+popd

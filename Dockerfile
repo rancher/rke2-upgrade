@@ -1,4 +1,4 @@
-ARG ALPINE=alpine:3.20
+ARG ALPINE=alpine:3.23
 FROM ${ALPINE} AS verify
 ARG TARGETARCH
 ARG TAG
@@ -22,6 +22,8 @@ RUN set -x \
  && apk --no-cache add curl \
  && export K8S_RELEASE=$(echo ${TAG} | grep -Eo 'v[0-9]+\.[0-9]+\.[0-9]+') \
  && curl -fsSLO https://dl.k8s.io/release/${K8S_RELEASE}/bin/linux/${TARGETARCH}/kubectl \
+ && curl -fsSLO https://dl.k8s.io/release/${K8S_RELEASE}/bin/linux/${TARGETARCH}/kubectl.sha256 \
+ && echo "$(cat kubectl.sha256)  kubectl" | sha256sum -c - \
  && chmod +x kubectl
 
 FROM ${ALPINE}
